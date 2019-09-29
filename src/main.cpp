@@ -1,50 +1,56 @@
 #include <Arduino.h>
-
 #include <DRV8833.h>
 #include <NeoPixelBus.h>
 #include "avdweb_Switch.h"
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 
-const uint16_t PixelCount = 15; // this example assumes 4 pixels, making it smaller will cause a failure
+/** PINS ASSIGNEMENTS **/
+const uint8_t
+  PIN_ANALOG_INPUT = A0,
+  PIN_HEAD_BUTTON = D0,
+  PIN_DFPLAYER_RX = D3,
+  PIN_DFPLAYER_TX = D4,
+  PIN_MOTOR_RIGHT_OPTO = D1,
+  PIN_MOTOR_RIGHT_1 = D5,
+  PIN_MOTOR_RIGHT_2 = D6,
+  PIN_MOTOR_LEFT_OPTO = D2,
+  PIN_MOTOR_LEFT_2 = D7,
+  PIN_MOTOR_LEFT_1 = D8;
 
-// Switch multiresponseButton = Switch(multiresponseButtonpin);
-// Other examples of constructors
-Switch multiresponseButton = Switch(D1, INPUT, LOW); // button to VCC, 10k pull-down resistor, no internal pull-up resistor, HIGH polarity
-Switch multiresponseButton2 = Switch(D2, INPUT, LOW); // button to VCC, 10k pull-down resistor, no internal pull-up resistor, HIGH polarity
-Switch multiresponseButton3 = Switch(D0, INPUT_PULLUP, HIGH); // button to VCC, 10k pull-down resistor, no internal pull-up resistor, HIGH polarity
-// Switch multiresponseButton = Switch(multiresponseButtonpin, INPUT_PULLUP, HIGH); // debounceTime 1ms
-// Switch multiresponseButton = Switch(multiresponseButtonpin, INPUT_PULLUP, LOW); // debounceTime 1ms
+/** SOME CONFING CONSTANTS **/
+const uint8_t
+  PIXEL_COUNT = 15,
+  COLOR_SATURATION = 128,
+  DFPLAYER_VOLUME = 20; // 0 => 30
 
-#define colorSaturation 128
+// SWITCH INSTANCES
+Switch headButton = Switch(PIN_HEAD_BUTTON, INPUT_PULLUP, LOW); // not working (inverted GND VCC on board)
+Switch leftMotorOpto = Switch(PIN_MOTOR_LEFT_OPTO, INPUT, HIGH); // now working (broken lcd)
+Switch rightMotorOpto = Switch(PIN_MOTOR_RIGHT_OPTO, INPUT, HIGH);
 
-NeoPixelBus<NeoGrbFeature, NeoEsp8266Dma800KbpsMethod> strip(PixelCount);
+// NEOPIXEL INSTANCE
+NeoPixelBus<NeoGrbFeature, NeoEsp8266Dma800KbpsMethod> strip(PIXEL_COUNT);
 
-RgbColor red(colorSaturation, 0, 0);
-RgbColor green(0, colorSaturation, 0);
-RgbColor blue(0, 0, colorSaturation);
-RgbColor white(colorSaturation);
+RgbColor red(COLOR_SATURATION, 0, 0);
+RgbColor green(0, COLOR_SATURATION, 0);
+RgbColor blue(0, 0, COLOR_SATURATION);
+RgbColor white(COLOR_SATURATION);
 RgbColor black(0);
 
-HslColor hslRed(red);
-HslColor hslGreen(green);
-HslColor hslBlue(blue);
-HslColor hslWhite(white);
-HslColor hslBlack(black);
-
-// Create an instance of the DRV8833:
+// DRV8833 INSTANCE
 DRV8833 driver = DRV8833();
 
-// Pin numbers. Replace with your own!
-// Attach the Arduino's pin numbers below to the
-// Ain1 and Ain2 DRV8833 pins.
-const uint8_t inputA1 = D5, inputA2 = D6, inputB1 = D7, inputB2 = D8;
+// SERIAL INSTANCE
+SoftwareSerial mySoftwareSerial(PIN_DFPLAYER_RX, PIN_DFPLAYER_TX); // RX, TX
 
-
-SoftwareSerial mySoftwareSerial(D3, D4); // RX, TX
+// MP3 INSTANCE
 DFRobotDFPlayerMini myDFPlayer;
 void printDetail(uint8_t type, int value);
 
+// ** SETUP
+// ** SETUP
+// ** SETUP
 
 void setup() {
   mySoftwareSerial.begin(9600);
@@ -60,15 +66,12 @@ void setup() {
   strip.Begin();
   strip.Show();
 
-
   Serial.println();
   Serial.println("Running...");
 
   // Attach a motor to the input pins:
-  driver.attachMotorA(inputA1, inputA2);
-  driver.attachMotorB(inputB1, inputB2);
-
-  Serial.println("Ready!");
+  driver.attachMotorA(PIN_MOTOR_RIGHT_1, PIN_MOTOR_RIGHT_2);  // RIGHT_MOTOR
+  driver.attachMotorB(PIN_MOTOR_LEFT_1, PIN_MOTOR_LEFT_2);    // LEFT_MOTOR
 
 
   if (!myDFPlayer.begin(mySoftwareSerial, false)) {  //Use softwareSerial to communicate with mp3.
@@ -81,30 +84,32 @@ void setup() {
   }
   Serial.println(F("DFPlayer Mini online."));
 
-  myDFPlayer.volume(10);  //Set volume value. From 0 to 30
+  myDFPlayer.volume(DFPLAYER_VOLUME);
   myDFPlayer.play(1);  //Play the first mp3
+
+  Serial.println("Ready!");
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
 
-  multiresponseButton.poll();
-  multiresponseButton2.poll();
-  multiresponseButton3.poll();
-  // if(multiresponseButton.longPress()) Serial.println("multiresponseButton longPress");
-  // if(multiresponseButton.doubleClick()) Serial.println("multiresponseButton doubleClick a");
-  // if(multiresponseButton.singleClick()) Serial.println("multiresponseButton singleClick");
-  // if(multiresponseButton2.longPress()) Serial.println("multiresponseButton longPress");
-  // if(multiresponseButton2.doubleClick()) Serial.println("multiresponseButton doubleClick b");
-  // if(multiresponseButton2.singleClick()) Serial.println("multiresponseButton singleClick");
-  if(multiresponseButton3.longPress()) Serial.println("multiresponseButton longPress c");
-  if(multiresponseButton3.doubleClick()) Serial.println("multiresponseButton doubleClick c");
-  if(multiresponseButton3.singleClick()) Serial.println("multiresponseButton singleClick c");
+  headButton.poll();
+  leftMotorOpto.poll();
+  rightMotorOpto.poll();
+  if(headButton.longPress()) Serial.println("headButton longPress");
+  if(headButton.doubleClick()) Serial.println("headButton doubleClick a");
+  if(headButton.singleClick()) Serial.println("headButton singleClick");
+  if(leftMotorOpto.longPress()) Serial.println("leftMotorOpto longPress");
+  if(leftMotorOpto.doubleClick()) Serial.println("leftMotorOpto doubleClick b");
+  if(leftMotorOpto.singleClick()) Serial.println("leftMotorOpto singleClick");
+  if(rightMotorOpto.longPress()) Serial.println("rightMotorOpto longPress c");
+  if(rightMotorOpto.doubleClick()) Serial.println("rightMotorOpto doubleClick c");
+  if(rightMotorOpto.singleClick()) Serial.println("rightMotorOpto singleClick c");
 
   static unsigned long timer = millis();
 
-  if (millis() - timer > 3000) {
+  if (millis() - timer > 500) {
     timer = millis();
     myDFPlayer.next();  //Play next mp3 every 3 second.
   }
@@ -115,13 +120,13 @@ void loop() {
 
   // Serial.println("Forward:");
   // // Put the motor in forward:
-  driver.motorAForward();
-  driver.motorBForward();
+    driver.motorAForward();
+    driver.motorBForward();
 
     // Serial.println("Colors R, G, B, W...");
 
-    int adcvalue = 0;
-    adcvalue = analogRead(A0);
+    // int adcvalue = 0;
+    // adcvalue = analogRead(PIN_ANALOG_INPUT);
     // Serial.print("VALUE: "+String(adcvalue));
 
     // // set the colors,
@@ -144,12 +149,12 @@ void loop() {
     // // the following line demonstrates rgbw color support
     // // if the NeoPixels are rgbw types the following line will compile
     // // if the NeoPixels are anything else, the following line will give an error
-    // //strip.SetPixelColor(3, RgbwColor(colorSaturation));
+    // //strip.SetPixelColor(3, RgbwColor(COLOR_SATURATION));
     // strip.Show();
 
 
   // Wait to see the effect:
-  // delay(5000);
+  // delay(1000);
 
   // // Pause the motor for stability:
   // driver.motorAStop();
