@@ -1,0 +1,12 @@
+{
+  "sound": [1, 2, 3, 5, 6],
+  "left_ear": {
+    "forward": 3
+  },
+  "right_ear": {
+    "forward": 3
+  },
+  "lights": {
+    "blue": 3
+  }
+}
