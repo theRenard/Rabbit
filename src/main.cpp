@@ -102,12 +102,19 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length) {
 
   if (MQTTSubPayload.containsKey("sound")) {
 
-    JsonArray array = MQTTSubPayload["sound"].as<JsonArray>();
-    for(JsonVariant v : array) {
+    RgbColor color;
+
+    JsonArray sound = MQTTSubPayload["sound"].as<JsonArray>();
+    for(JsonVariant v : sound) {
 
       for (uint16_t pixel = 0; pixel < PIXEL_COUNT; pixel++) {
-          RgbColor color = RgbColor(random(255), random(255), random(255));
-          strip.SetPixelColor(pixel, color);
+        if (MQTTSubPayload.containsKey("colors")) {
+          JsonArray colors = MQTTSubPayload["colors"].as<JsonArray>();
+          color = RgbColor(colors[0], colors[1], colors[2]);
+        } else {
+          color = RgbColor(random(255), random(255), random(255));
+        }
+        strip.SetPixelColor(pixel, color);
       }
       strip.Show();
 
