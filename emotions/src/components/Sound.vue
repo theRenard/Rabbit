@@ -2,11 +2,12 @@
   .sound(
     draggable
     :class="{ onDrag: onDrag, isPlaying: isPlaying }"
-    @click="playSound"
+    @click.stop="playSound"
     @dragstart="dragstart"
-    @dragend="dragend"
-    @dragenter="dragenter" )
-    slot
+    @dragend="dragend" )
+    span
+      i.el-icon-video-play
+      |  {{ mp3File }}
 
 </template>
 
@@ -27,8 +28,6 @@ export default {
   },
   created() {
     const audioFile = `${publicPath}sounds/${trimNumber(this.mp3File)}.mp3`;
-    // eslint-disable-next-line no-console
-    console.log(audioFile);
     this.audio = new Audio(audioFile);
   },
   methods: {
@@ -40,14 +39,13 @@ export default {
          }, 500 )
       });
     },
-    dragstart: function() {
+    dragstart: function(event) {
       this.onDrag = true;
+      event.dataTransfer.setData("fileNumber", this.mp3File);
     },
     dragend: function() {
       this.onDrag = false;
     },
-    dragenter: function() {
-    }
   },
 }
 </script>
@@ -61,6 +59,7 @@ export default {
   background: blue
   border-radius: 5px
   display: flex
+  flex: 0 0 auto
   justify-content: center
   align-items: center
   color: white
