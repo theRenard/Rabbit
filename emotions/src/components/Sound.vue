@@ -1,13 +1,12 @@
 <template lang="pug">
   .sound(
     draggable
-    :class="{ onDrag: onDrag, isPlaying: isPlaying }"
+    :class="{ isPlaying: isPlaying }"
     @click.stop="playSound"
     @dragstart="dragstart"
     @dragend="dragend" )
-    span
-      i.el-icon-video-play
-      |  {{ mp3File }}
+    .remove( @click.stop="$emit('destroy')" ) -
+    span {{ mp3File }}
 
 </template>
 
@@ -50,23 +49,53 @@ export default {
 }
 </script>
 
-<style lang="sass">
-.sound
-  width: 50px
-  height: 50px
-  padding: 5px
-  margin: 5px
-  background: blue
-  border-radius: 5px
-  display: flex
-  flex: 0 0 auto
-  justify-content: center
-  align-items: center
-  color: white
-  &.onDrag
-    background-color: red
-    opacity: .1
-  &.isPlaying
-    color: black
-    background-color: yellow
+<style lang="scss">
+.sound {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 5px;
+  margin: 7px 0 0 7px;
+  border-radius: 5px;
+  border: 2px solid black;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  align-items: center;
+  color: black;
+  cursor: move;
+  cursor: grab;
+  font-weight: bold;
+  &:active {
+    cursor: grabbing;
+    background-color: red;
+    opacity: .1;
+  }
+  &.isPlaying {
+    color: black;
+    background-color: yellow;
+  }
+  .remove {
+    position: absolute;
+    right: -5px;
+    top: -5px;
+    width: 15px;
+    height: 15px;
+    background-color: red;
+    border-radius: 50%;
+    font-size: 25px;
+    color: white;
+    line-height: 12px;
+    text-align: center;
+    display: none;
+    cursor: pointer;
+  }
+  &.selected {
+    &:hover {
+      .remove {
+        display: block;
+      }
+    }
+  }
+}
 </style>

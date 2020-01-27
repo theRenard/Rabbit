@@ -1,4 +1,10 @@
-# emotions
+# Rabbit
+
+![](/emotions/src/assets/webapp.gif)
+Select audio sample and send RGB color to Rabbit
+
+![](/emotions/src/assets/rabbit.gif)
+
 
 ## Project setup
 ```
